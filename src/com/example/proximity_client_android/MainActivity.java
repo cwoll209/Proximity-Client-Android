@@ -1,26 +1,46 @@
 package com.example.proximity_client_android;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.os.Build;
 
 public class MainActivity extends Activity {
+
+	Socket clientSocket;
+	ObjectOutputStream objectstream = null;
+	Button btn;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		btn = (Button) findViewById(R.id.startbutton);
+		btn.setOnClickListener(new OnClickListener() {
 
-		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction().add(R.id.container, new PlaceholderFragment()).commit();
-		}
+			@Override
+			public void onClick(View v) {
+				Thread t = new Thread(new ClientThread());
+				Log.d("ClientActivity", "Received IP");
+				t.start();
+			}
+		});
+
 	}
 
 	@Override
@@ -43,18 +63,31 @@ public class MainActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	/**
-	 * A placeholder fragment containing a simple view.
-	 */
-	public static class PlaceholderFragment extends Fragment {
+	class ClientThread implements Runnable {
 
-		public PlaceholderFragment() {
+		private static final String tag = "Client";
+
+		public ClientThread() {
+
 		}
 
 		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-			return rootView;
+		public void run() {
+			System.out.println("trying to start client");
+			try {
+				clientSocket = new Socket("192.42.21.111", 12345);
+				System.out.println("Received IP");
+				objectstream = new ObjectOutputStream(clientSocket.getOutputStream());
+			} catch (UnknownHostException e) {
+				System.out.println("UnknownHost");
+				e.printStackTrace();
+			} catch (IOException e) {
+				System.out.println("IOException");
+				e.printStackTrace();
+			}
+
+			System.out.println("client started");
+
 		}
 	}
 
